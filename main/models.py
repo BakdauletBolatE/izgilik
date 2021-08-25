@@ -1,5 +1,7 @@
 from django.db import models
 from datetime import datetime
+from django.utils.safestring import mark_safe
+from django import forms
 # Create your models here.
 
 
@@ -11,6 +13,24 @@ class StatusHome(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = 'Вид помощи дома'
+        verbose_name_plural = 'Виды помощи домам'
+
+
+class ExportationData(models.Model):
+    file = models.FileField(upload_to='files/')
+    name= models.CharField(max_length=255)
+    total = models.CharField(max_length=255)
+
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Сохрененный данный'
+        verbose_name_plural = 'Сохрененные данные'
 
 
 class Needy(models.Model):
@@ -32,62 +52,85 @@ class Needy(models.Model):
     period = models.CharField('Срок получение', max_length=255,)
     typeHelp = models.TextField('Какая помощь необходима')
     status = models.IntegerField('Статус малоимущих', choices=status_type,blank=True, null=True)
+    createdAt = models.DateTimeField(auto_created=True)
 
 
     def __str__(self):
         return f'{self.name} {self.surName}'
-
         
+    class Meta:
+        verbose_name = 'Заявка'
+        verbose_name_plural = 'Заявки'
+
+
+    def changeStatus(self, *args, **kwargs):
+        choices =  f"""<input type="hidden" name="id" value={self.id}/>"""
+        choices += """<select name="changeId" onchange='this.form.submit()'>"""
+        for status_type,name in (self.status_type):
+            if status_type == self.status:      
+                choices += f"<option selected='selected' value={status_type}>{name}</option>"
+            else:
+                choices += f"<option value={status_type}>{name}</option>"
+        choices += "</select></form>"
+      
+        return mark_safe(choices)
 
     def save(self, *args,**kwargs):
-        
-        self.childTotal = int(self.childs.count())
-        dateYear = datetime.today().year
-        dateMonth = datetime.today().month
-        dateDay = datetime.today().day
-        
-        exceptIin = False
-        print("save needs")
-        for childIin in self.childs.all():
-            iin = str(childIin.iin)
-        
-            year = iin[0:2]
-            month = iin[2:4]
-            if iin[2:3] == '0':
-                month = iin[3:4]
-        
-            day = iin[4:6]
 
-            if iin[4:5] == '0':
-                month = iin[5:6]
 
-            firstNumber = iin[0:1]
-            if int(firstNumber) == 9:
-                self.status = 2
-                year = "19"+year
-                exceptIin = True
-                super().save(*args, **kwargs)
-                
-            else:
-                year = "20"+year
-            if dateYear - int(year) == 18 and exceptIin == False:
-                if dateMonth <= int(month) and exceptIin == False:
-                    if dateDay < int(day) and exceptIin == False:
-                        self.status = 0
-                        super().save(*args, **kwargs)
+        if self.status == 1:
+            return super().save(*args,**kwargs)
+        else:
+
+            super().save(*args,**kwargs)
+            
+            self.childTotal = int(self.childs.count())
+            dateYear = datetime.today().year
+            dateMonth = datetime.today().month
+            dateDay = datetime.today().day
+            
+            exceptIin = False
+            print("save needs")
+            for childIin in self.childs.all():
+                iin = str(childIin.iin)
+            
+                year = iin[0:2]
+                month = iin[2:4]
+                if iin[2:3] == '0':
+                    month = iin[3:4]
+            
+                day = iin[4:6]
+
+                if iin[4:5] == '0':
+                    month = iin[5:6]
+
+                firstNumber = iin[0:1]
+                if int(firstNumber) == 9:
+                    self.status = 2
+                    year = "19"+year
+                    exceptIin = True
+                    super().save(*args, **kwargs)
+                    
+                else:
+                    year = "20"+year
+                if dateYear - int(year) == 18 and exceptIin == False:
+                    if dateMonth <= int(month) and exceptIin == False:
+                        if dateDay < int(day) and exceptIin == False:
+                            self.status = 0
+                            super().save(*args, **kwargs)
+                        else:
+                            self.status = 2
+                            super().save(*args, **kwargs)
                     else:
                         self.status = 2
                         super().save(*args, **kwargs)
+                elif dateYear - int(year) < 18 and exceptIin == False:
+                    self.status = 0
+                    super().save(*args, **kwargs)
                 else:
                     self.status = 2
+                    exceptIin = True
                     super().save(*args, **kwargs)
-            elif dateYear - int(year) < 18 and exceptIin == False:
-                self.status = 0
-                super().save(*args, **kwargs)
-            else:
-                self.status = 2
-                exceptIin = True
-                super().save(*args, **kwargs)
                 
                 
 
@@ -116,4 +159,8 @@ class Child(models.Model):
 
     def __str__(self):
         return f'{self.name} {self.surName}'
+
+    class Meta:
+        verbose_name = 'Детя'
+        verbose_name_plural = 'Дети'
 
