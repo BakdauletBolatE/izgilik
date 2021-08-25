@@ -96,9 +96,9 @@ else:
     DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'izgilikBase',
-        'USER': 'izgilikUser',
-        'PASSWORD': 'baguvix123F',
+        'NAME': 'dbforproject',
+        'USER': 'projectdbuser',
+        'PASSWORD': 'password',
         'HOST': 'localhost'
     }
 }
