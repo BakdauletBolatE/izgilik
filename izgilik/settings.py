@@ -96,14 +96,12 @@ else:
     DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'dbforproject',
-        'USER': 'projectdbuser',
-        'PASSWORD': 'password',
+        'NAME': 'dbiz',
+        'USER': 'useriz',
+        'PASSWORD': 'baguvix123F',
         'HOST': 'localhost'
     }
 }
-
-
 
 
 # Password validation

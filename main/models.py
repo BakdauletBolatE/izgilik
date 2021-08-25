@@ -63,18 +63,6 @@ class Needy(models.Model):
         verbose_name_plural = 'Заявки'
 
 
-    def changeStatus(self, *args, **kwargs):
-        choices =  f"""<input type="hidden" name="id" value={self.id}/>"""
-        choices += """<select name="changeId" onchange='this.form.submit()'>"""
-        for status_type,name in (self.status_type):
-            if status_type == self.status:      
-                choices += f"<option selected='selected' value={status_type}>{name}</option>"
-            else:
-                choices += f"<option value={status_type}>{name}</option>"
-        choices += "</select></form>"
-      
-        return mark_safe(choices)
-
     def save(self, *args,**kwargs):
 
 
@@ -132,16 +120,7 @@ class Needy(models.Model):
                     exceptIin = True
                     super().save(*args, **kwargs)
                 
-                
-
-
-        
-        
-            
-
-        
-        
-                
+                  
 
 class Child(models.Model):
 

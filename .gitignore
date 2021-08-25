@@ -17,6 +17,7 @@ Icon
 .Trashes
 .local.py
 local.py
+
 # Directories potentially created on remote AFP share
 .AppleDB
 .AppleDesktop
