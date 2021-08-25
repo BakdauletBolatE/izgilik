@@ -33,7 +33,7 @@ SECRET_KEY = 'django-insecure-m8t0_f6aj$!)2qat+gls406gcirqpohs!+1i+i)u78oivpmd-0
 if DEBUG:
     ALLOWED_HOSTS = ['*']
 else:
-    ALLOWED_HOSTS = ['']
+    ALLOWED_HOSTS = ['89.223.70.224','izgilikfound.kz']
 
 
 # Application definition
@@ -102,6 +102,8 @@ else:
         'HOST': 'localhost'
     }
 }
+
+
 
 
 # Password validation
