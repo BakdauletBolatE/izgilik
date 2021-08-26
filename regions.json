@@ -1,0 +1,1 @@
+[{"model": "main.region", "pk": 1, "fields": {"name": "Абайский район (Шымкент)"}}, {"model": "main.region", "pk": 2, "fields": {"name": "Аль-Фарабийский район"}}, {"model": "main.region", "pk": 3, "fields": {"name": "Енбекшинский район"}}, {"model": "main.region", "pk": 4, "fields": {"name": "Каратауский район"}}]

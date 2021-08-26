@@ -3,6 +3,7 @@ from datetime import datetime
 from django.utils.safestring import mark_safe
 from django import forms
 from django.contrib.auth.models import User
+from django.utils import timezone
 # Create your models here.
 
 
@@ -34,12 +35,19 @@ class ExportationData(models.Model):
         verbose_name_plural = 'Сохрененные данные'
 
 
+class Region(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
 class Needy(models.Model):
 
     status_type = (
-        (0, 'Основные'),
-        (1, 'Отроботонные'),
-        (2,'Исключение')
+        (0, 'Помощь не полученные'),
+        (1, 'Полученные'),
+        (2,'Исключение'),
+        (3,'Заново не полученные')
     )
 
     name = models.CharField('Имя',max_length=255, )
@@ -48,14 +56,18 @@ class Needy(models.Model):
     address = models.CharField('Адрес', max_length=255,)
     iin = models.CharField('ИИН', max_length=12)
     childTotal = models.IntegerField('Количество детей', null=True, blank=True)
-    statusHome = models.ForeignKey(StatusHome, on_delete=models.CASCADE)
-    getHelp = models.TextField('Какую помощь получили')
-    period = models.CharField('Срок получение', max_length=255,)
-    typeHelp = models.TextField('Какая помощь необходима')
+    statusHome = models.ForeignKey(StatusHome, verbose_name="Статус дома", on_delete=models.CASCADE)
+    getHelp = models.TextField('Какую помощь получили',null=True,blank=True)
+    period = models.CharField('Срок получение', max_length=255,null=True,blank=True)
+    typeHelp = models.TextField('Какая помощь необходима',null=True,blank=True)
     status = models.IntegerField('Статус малоимущих', choices=status_type,blank=True, null=True)
-    createdAt = models.DateTimeField(auto_created=True)
-    isDeadMan = models.BooleanField(default=False)
-    owner = models.ForeignKey(User, null=True, blank=True,on_delete=models.CASCADE)
+    created_at = models.DateTimeField("Дата создания",default=timezone.now)
+    updated_at = models.DateTimeField("Дата изменения",auto_now=True)
+    isDeadMan = models.BooleanField("Статус вдовы",default=False)
+    helped = models.BooleanField("Помощь получили",default=False)
+    region = models.ForeignKey(Region,verbose_name='Регион', on_delete=models.CASCADE,blank=True,null=True)
+    owner = models.ForeignKey(User, verbose_name="Создатель заявки", null=True, blank=True,on_delete=models.CASCADE,related_name="owner")
+    changed_onwer = models.ForeignKey(User,null=True, verbose_name="Изменитель заявки", blank=True,on_delete=models.CASCADE,related_name="changed_owner")
 
 
     def __str__(self):
@@ -66,10 +78,7 @@ class Needy(models.Model):
         verbose_name_plural = 'Заявки'
 
 
-    def save(self,request, *args,**kwargs):
-        if self.owner is None:
-            self.owner = request.user
-        
+    def save(self,*args,**kwargs):
         if self.status == 1:
             return super().save(*args,**kwargs)
         else:
@@ -105,25 +114,30 @@ class Needy(models.Model):
                     
                 else:
                     year = "20"+year
+
                 if dateYear - int(year) == 18 and exceptIin == False:
                     if dateMonth <= int(month) and exceptIin == False:
                         if dateDay < int(day) and exceptIin == False:
-                            self.status = 0
-                            super().save(*args, **kwargs)
+                            if self.helped == True:     
+                                self.status = 3
+                            else:
+                                self.status = 0
                         else:
                             self.status = 2
-                            super().save(*args, **kwargs)
                     else:
                         self.status = 2
-                        super().save(*args, **kwargs)
+
                 elif dateYear - int(year) < 18 and exceptIin == False:
-                    self.status = 0
-                    super().save(*args, **kwargs)
+                    if self.helped == True:
+                        self.status = 3
+                    else:
+                        self.status = 0
                 else:
                     self.status = 2
                     exceptIin = True
-                    super().save(*args, **kwargs)
-                
+
+            super().save(*args, **kwargs)
+                            
                   
 
 class Child(models.Model):
