@@ -2,6 +2,7 @@ from django.db import models
 from datetime import datetime
 from django.utils.safestring import mark_safe
 from django import forms
+from django.contrib.auth.models import User
 # Create your models here.
 
 
@@ -54,6 +55,7 @@ class Needy(models.Model):
     status = models.IntegerField('Статус малоимущих', choices=status_type,blank=True, null=True)
     createdAt = models.DateTimeField(auto_created=True)
     isDeadMan = models.BooleanField(default=False)
+    owner = models.ForeignKey(User, null=True, blank=True,on_delete=models.CASCADE)
 
 
     def __str__(self):
@@ -64,9 +66,10 @@ class Needy(models.Model):
         verbose_name_plural = 'Заявки'
 
 
-    def save(self, *args,**kwargs):
-
-
+    def save(self,request, *args,**kwargs):
+        if self.owner is None:
+            self.owner = request.user
+        
         if self.status == 1:
             return super().save(*args,**kwargs)
         else:
