@@ -18,6 +18,10 @@ Icon
 .local.py
 local.py
 
+media/
+media
+.mediates
+
 # Directories potentially created on remote AFP share
 .AppleDB
 .AppleDesktop

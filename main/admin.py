@@ -12,7 +12,7 @@ class NeedyAdmin(admin.ModelAdmin):
     inlines = [TabularInlineChild,]
     readonly_fields = ('childTotal',)
     list_display = ('name','phone','status','address','iin','childTotal')
-    list_filter = ['status']
+    list_filter = ['status','statusHome','isDeadMan']
     list_editable = ('status',) 
     
 

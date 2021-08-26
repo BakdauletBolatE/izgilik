@@ -53,6 +53,7 @@ class Needy(models.Model):
     typeHelp = models.TextField('Какая помощь необходима')
     status = models.IntegerField('Статус малоимущих', choices=status_type,blank=True, null=True)
     createdAt = models.DateTimeField(auto_created=True)
+    isDeadMan = models.BooleanField(default=False)
 
 
     def __str__(self):
@@ -142,4 +143,5 @@ class Child(models.Model):
     class Meta:
         verbose_name = 'Детя'
         verbose_name_plural = 'Дети'
+
 
