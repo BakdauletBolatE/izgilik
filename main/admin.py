@@ -15,6 +15,7 @@ class NeedyAdmin(admin.ModelAdmin):
     list_display = ('name','phone','status','address','iin','childTotal')
     list_filter = ['status','statusHome','isDeadMan','region']
     list_editable = ('status',) 
+    search_fields = ('name', 'surName', 'iin',)
 
     def save_model(self, request, obj, form, change):
         if obj.owner is None:     

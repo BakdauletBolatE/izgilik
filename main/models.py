@@ -56,11 +56,12 @@ class Needy(models.Model):
     address = models.CharField('Адрес', max_length=255,)
     iin = models.CharField('ИИН', max_length=12)
     childTotal = models.IntegerField('Количество детей', null=True, blank=True)
-    statusHome = models.ForeignKey(StatusHome, verbose_name="Статус дома", on_delete=models.CASCADE)
+    statusHome = models.ForeignKey(StatusHome, verbose_name="Статус дома", on_delete=models.CASCADE, blank=True, null=True)
     getHelp = models.TextField('Какую помощь получили',null=True,blank=True)
     period = models.CharField('Срок получение', max_length=255,null=True,blank=True)
     typeHelp = models.TextField('Какая помощь необходима',null=True,blank=True)
     status = models.IntegerField('Статус малоимущих', choices=status_type,blank=True, null=True)
+    comment = models.TextField('Комментарий', null=True, blank=True)
     created_at = models.DateTimeField("Дата создания",default=timezone.now)
     updated_at = models.DateTimeField("Дата изменения",auto_now=True)
     isDeadMan = models.BooleanField("Статус вдовы",default=False)
@@ -79,11 +80,18 @@ class Needy(models.Model):
 
 
     def save(self,*args,**kwargs):
+
+        
+        
+
         if self.status == 1:
             return super().save(*args,**kwargs)
+
         else:
 
             super().save(*args,**kwargs)
+            
+            
             
             self.childTotal = int(self.childs.count())
             dateYear = datetime.today().year
@@ -93,59 +101,76 @@ class Needy(models.Model):
             exceptIin = False
             print("save needs")
             for childIin in self.childs.all():
-                iin = str(childIin.iin)
-            
-                year = iin[0:2]
-                month = iin[2:4]
-                if iin[2:3] == '0':
-                    month = iin[3:4]
-            
-                day = iin[4:6]
+                if childIin.gender == "Девочка":
+                    if self.status == 2:
+                        return super().save(*args,**kwargs)
+                    self.status = 0
+                    return super().save(*args,**kwargs)
+                        
 
-                if iin[4:5] == '0':
-                    month = iin[5:6]
-
-                firstNumber = iin[0:1]
-                if int(firstNumber) == 9:
-                    self.status = 2
-                    year = "19"+year
-                    exceptIin = True
-                    super().save(*args, **kwargs)
-                    
                 else:
-                    year = "20"+year
+                    iin = str(childIin.iin)
+                
+                    year = iin[0:2]
+                    month = iin[2:4]
+                    if iin[2:3] == '0':
+                        month = iin[3:4]
+                
+                    day = iin[4:6]
 
-                if dateYear - int(year) == 18 and exceptIin == False:
-                    if dateMonth <= int(month) and exceptIin == False:
-                        if dateDay < int(day) and exceptIin == False:
-                            if self.helped == True:     
-                                self.status = 3
+                    if iin[4:5] == '0':
+                        month = iin[5:6]
+
+                    firstNumber = iin[0:1]
+                    if int(firstNumber) == 9:
+                        self.status = 2
+                        year = "19"+year
+                        exceptIin = True
+                        super().save(*args, **kwargs)
+                        
+                    else:
+                        year = "20"+year
+
+                    if dateYear - int(year) == 18 and exceptIin == False:
+                        if dateMonth <= int(month) and exceptIin == False:
+                            if dateDay < int(day) and exceptIin == False:
+                                if self.helped == True:     
+                                    self.status = 3
+                                    
+                                else:
+                                    self.status = 0
                             else:
-                                self.status = 0
+                                self.status = 2
                         else:
                             self.status = 2
+
+                    elif dateYear - int(year) < 18 and exceptIin == False:
+                        if self.helped == True:
+                            self.status = 3
+                        else:
+                            if self.status == 2:
+                                return super().save(*args,**kwargs)
+                            self.status = 0
+                            
                     else:
                         self.status = 2
-
-                elif dateYear - int(year) < 18 and exceptIin == False:
-                    if self.helped == True:
-                        self.status = 3
-                    else:
-                        self.status = 0
-                else:
-                    self.status = 2
-                    exceptIin = True
-
-            super().save(*args, **kwargs)
-                            
+                        exceptIin = True
+                    super().save(*args, **kwargs)
+                                
                   
 
 class Child(models.Model):
+
+    gend = (
+        ('Мальчик', 'Мальчик'),
+        ('Девочка', 'Девочка')
+    )
 
     name = models.CharField('Имя',max_length=255, )
     surName = models.CharField('Фамилия', max_length=255,)
     iin = models.CharField('ИИН', max_length=12)
     parents = models.ForeignKey(Needy, on_delete=models.CASCADE, related_name='childs')
+    gender = models.CharField('Пол ребенка', max_length=255, choices=gend, blank=True, null=True )
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
